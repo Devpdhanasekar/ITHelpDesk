@@ -6,6 +6,7 @@ const userSignup = async (req, res, next) => {
     console.log("-----", req.body)
     const {
       userName,
+      empName,
       password,
       mobileNumber,
       role,
@@ -15,6 +16,7 @@ const userSignup = async (req, res, next) => {
     try {
       // Check if the user already exists
       const existingUser = await User.findOne({ mobileNumber });
+      console.log("existingUser", existingUser)
       if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
@@ -25,6 +27,7 @@ const userSignup = async (req, res, next) => {
       // Create a new user
       const user = new User({
         userName,
+        empName,
         password: hashedPassword,
         location,
         role,
@@ -83,22 +86,36 @@ const userSignup = async (req, res, next) => {
     const correctPassword = bcryptjs.compareSync(password, existingUser.password)
   
     if (correctPassword) {
-      // const token = jwt.sign(
-      //   { id: existingUser._id },
-      //   process.env.JWT_SECRET_KEY, // Replace with your secret key for signing the token
-      //   { expiresIn: "1week" } // Token expiration time
-      // );
+      const token = jwt.sign(
+        { id: existingUser._id },
+        "ITHelpdesk", // Replace with your secret key for signing the token
+        { expiresIn: "1week" } // Token expiration time
+      );
     //   const token = jwt.sign(
     //     { email: existingUser.email, userId: existingUser._id },
     //     process.env.JWT_SECRET_KEY,
     //     { expiresIn: "1week" }
     //   );
-    //   req.generatedToken = token;
-      res.status(200).json(existingUser)
+      req.generatedToken = token;
+      res.status(200).json({existingUser,"message": "Login Successful", token: token });
     }
     next()
+}
+
+
+const getAllComplaints = async (req, res) => {
+    try {
+        const complaints = await User.find();
+
+        res.status(200).json(complaints);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching complaints', error });
+    }
+};
+
+
+
+  module.exports = {
+    loginUser,
+    userSignup
   }
-
-
-  module.exports = userSignup
-  module.exports = loginUser
