@@ -46,7 +46,7 @@ const userSignup = async (req, res, next) => {
       // Generate a token
       const token = jwt.sign(
         { mobileNumber: savedUser.mobileNumber, userId: savedUser._id },
-        process.env.JWT_SECRET_KEY,
+        "ITHelpdesk",
         { expiresIn: "1week" }
       );
   
@@ -114,20 +114,29 @@ const getAllComplaints = async (req, res) => {
 };
 
 
-const validateToken = (req,res)=>{
-  console.log("iscalled");
-  const {token} = req.body;
-  if(token){
-    jwt.verify(token,"ITHelpdesk",(err,decoded)=>{
-      if(err){
-        res.status(401).json({message: false})
-      }else{
-        res.status(200).json({message:true})
+const validateToken = async (req, res) => {
+  console.log("is called");
+  const { token } = req.body;
+  if (token) {
+    jwt.verify(token, "ITHelpdesk", async (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ message: false });
+      } else {
+        console.log(decoded);
+        try {
+          const user = await User.findById(decoded.id);
+          console.log(user);
+          return res.status(200).json({ message: true, existingUser: user });
+        } catch (error) {
+          console.error(error);
+          return res.status(500).json({ message: false });
+        }
       }
-    })
+    });
+  } else {
+    return res.status(400).json({ message: false });
   }
-}
-
+};
 
 
   module.exports = {
