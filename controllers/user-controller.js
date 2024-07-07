@@ -114,8 +114,23 @@ const getAllComplaints = async (req, res) => {
 };
 
 
+const validateToken = (req,res)=>{
+  const {token} = req.body;
+  if(token){
+    jwt.verify(token,"ITHelpdesk",(err,decoded)=>{
+      if(err){
+        res.status(401).json({message: false})
+      }else{
+        res.status(200).json({message:true})
+      }
+    })
+  }
+}
+
+
 
   module.exports = {
     loginUser,
-    userSignup
+    userSignup,
+    validateToken
   }
