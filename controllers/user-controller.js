@@ -115,7 +115,7 @@ const getAllComplaints = async (req, res) => {
 
 
 const validateToken = (req,res)=>{
-  print("iscalled");
+  console.log("iscalled");
   const {token} = req.body;
   if(token){
     jwt.verify(token,"ITHelpdesk",(err,decoded)=>{
