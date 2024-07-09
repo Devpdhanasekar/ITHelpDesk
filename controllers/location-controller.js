@@ -1,11 +1,10 @@
-const Location = require('../models/location'); // Adjust the path as necessary
-
+const LocationName = require("../models/Location");
 // Create a new location
 exports.createLocation = async (req, res) => {
   const { location } = req.body;
 
   try {
-    const newLocation = new Location({ location });
+    const newLocation = new LocationName({ location });
     await newLocation.save();
     res.status(201).json(newLocation);
   } catch (error) {

@@ -9,4 +9,4 @@ const locationSchema = new Schema({
     },
 },{timestamps:true})
 
-module.exports = mongoose.model("Location", locationSchema);
+module.exports = mongoose.model("LocationName", locationSchema);
