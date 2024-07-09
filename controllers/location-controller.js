@@ -15,7 +15,7 @@ exports.createLocation = async (req, res) => {
 // Get all locations
 exports.getAllLocations = async (req, res) => {
   try {
-    const locations = await Location.find().select('location -_id');
+    const locations = await LocationName.find().select('location -_id');
     const locationArray = locations.map(location => location.location);
     res.status(200).json(locationArray);
   } catch (error) {
@@ -29,7 +29,7 @@ exports.getLocationById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const location = await Location.findById(id);
+    const location = await LocationName.findById(id);
     if (!location) {
       return res.status(404).json({ message: 'Location not found' });
     }
@@ -45,7 +45,7 @@ exports.updateLocationById = async (req, res) => {
   const { location } = req.body;
 
   try {
-    const updatedLocation = await Location.findByIdAndUpdate(
+    const updatedLocation = await LocationName.findByIdAndUpdate(
       id,
       { location },
       { new: true, runValidators: true }
@@ -66,7 +66,7 @@ exports.deleteLocationById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deletedLocation = await Location.findByIdAndDelete(id);
+    const deletedLocation = await LocationName.findByIdAndDelete(id);
     if (!deletedLocation) {
       return res.status(404).json({ message: 'Location not found' });
     }
