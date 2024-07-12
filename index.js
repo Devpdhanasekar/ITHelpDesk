@@ -4,12 +4,14 @@ const app = express();
 const port = 8080;
 const CORS = require('cors');
 const locationRouter = require('./routes/location-routes');
+const complaintRouter = require('./routes/complaint-routes');
 
 app.use(CORS())
 require('./models/db')
 app.use(express.json());
-app.use('/',userRouter)
+app.use('/', userRouter)
 app.use('/location', locationRouter);
-app.listen(port,()=>{
+app.use('/ticket', complaintRouter)
+app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 })

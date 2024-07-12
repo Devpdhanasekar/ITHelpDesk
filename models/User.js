@@ -7,7 +7,7 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
-    empName:{
+    empName: {
         type: String,
         required: true
     },
@@ -28,13 +28,17 @@ const userSchema = new Schema({
         required: true
     },
     complaints: [{
-        type : mongoose.Schema.Types.ObjectId,
-        ref : 'Complaint'
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Complaint'
     }],
     resolvedComplaints: [{
-        type : mongoose.Schema.Types.ObjectId,
-        ref : 'Complaint'
-        }],
-},{timestamps:true})
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Complaint'
+    }],
+    receivedTickets: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Complaint'
+    }]
+}, { timestamps: true })
 
 module.exports = mongoose.model("User", userSchema);

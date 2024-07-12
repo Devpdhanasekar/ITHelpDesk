@@ -1,37 +1,74 @@
 const Complaint = require("../models/Complaint");
 const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
 // Function to add a complaint
 const addComplaint = async (req, res) => {
     try {
-        const { complaintBy, natureOfComplaint, dateAndTimeOfComplaint, location, assignedTo, status, remarks, dateAndTimeOfResolution, ticketStatus } = req.body;
-
-        const newComplaint = new Complaint({
-            complaintBy,
+        const {
+            complaintFrom,
             natureOfComplaint,
+            descriptionOfComplaint,
             dateAndTimeOfComplaint,
-            location,
-            assignedTo,
-            status,
-            remarks,
-            dateAndTimeOfResolution,
-            ticketStatus
-        });
+            // location,
+            token,
+        } = req.body;
 
-        const savedComplaint = await newComplaint.save();
+        if (token) {
+            jwt.verify(token, "ITHelpdesk", async (err, decoded) => {
+                if (err) {
+                    return res.status(401).json({ message: false });
+                } else {
+                    try {
+                        const user = await User.findById(decoded.id);
+                        console.log(user);
+                        if (!user) {
+                            return res.status(404).json({ message: "User not found" });
+                        }
 
-        // Assuming assignedTo contains userId
-        const user = await User.findById(assignedTo.userId);
-        if (user) {
-            user.complaints.push(savedComplaint._id);
-            await user.save();
+                        // Find an "LAdmin" user with the same location
+                        let assignedTo = await User.findOne({ role: "LAdmin", location: user.location });
+                        const superAdmin = await User.findOne({ role: "SuperAdmin" });
+
+                        if (!assignedTo) {
+                            assignedTo = superAdmin;
+                            // return res.status(404).json({ message: "No LAdmin found in the same location" });
+                        }
+
+                        // Create the new complaint
+                        const newComplaint = new Complaint({
+                            complaintFrom: complaintFrom,
+                            complaintBy: user._id,
+                            natureOfComplaint,
+                            descriptionOfComplaint,
+                            dateAndTimeOfComplaint,
+                            location: user.location,
+                            assignedTo: assignedTo._id,
+                        });
+
+                        await newComplaint.save();
+                        user.complaints.push(newComplaint._id);
+                        await user.save();
+                        assignedTo.receivedTickets.push(newComplaint._id);
+
+                        return res.status(200).json({ message: true, complaint: newComplaint });
+                    } catch (error) {
+                        console.error(error);
+                        return res.status(500).json({ message: false });
+                    }
+                }
+            });
+        } else {
+            return res.status(400).json({ message: "Token not provided" });
         }
-
-        res.status(201).json(savedComplaint);
     } catch (error) {
-        res.status(500).json({ message: 'Error adding complaint', error });
+        console.error(error);
+        return res.status(500).json({ message: "Error adding complaint", error });
     }
 };
+
+module.exports = addComplaint;
+
 
 // Function to edit a complaint
 const editComplaint = async (req, res) => {
@@ -39,15 +76,19 @@ const editComplaint = async (req, res) => {
         const { complaintId } = req.params;
         const updateData = req.body;
 
-        const updatedComplaint = await Complaint.findByIdAndUpdate(complaintId, updateData, { new: true });
+        const updatedComplaint = await Complaint.findByIdAndUpdate(
+            complaintId,
+            updateData,
+            { new: true }
+        );
 
         if (!updatedComplaint) {
-            return res.status(404).json({ message: 'Complaint not found' });
+            return res.status(404).json({ message: "Complaint not found" });
         }
 
         res.status(200).json(updatedComplaint);
     } catch (error) {
-        res.status(500).json({ message: 'Error editing complaint', error });
+        res.status(500).json({ message: "Error editing complaint", error });
     }
 };
 
@@ -59,7 +100,7 @@ const deleteComplaint = async (req, res) => {
         const deletedComplaint = await Complaint.findByIdAndDelete(complaintId);
 
         if (!deletedComplaint) {
-            return res.status(404).json({ message: 'Complaint not found' });
+            return res.status(404).json({ message: "Complaint not found" });
         }
 
         // Assuming assignedTo contains userId
@@ -69,42 +110,43 @@ const deleteComplaint = async (req, res) => {
             await user.save();
         }
 
-        res.status(200).json({ message: 'Complaint deleted successfully' });
+        res.status(200).json({ message: "Complaint deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting complaint', error });
+        res.status(500).json({ message: "Error deleting complaint", error });
     }
 };
-
 
 const getComplaintById = async (req, res) => {
     try {
         const { complaintId } = req.params;
 
-        const complaint = await Complaint.findById(complaintId).populate('assignedTo');
+        const complaint = await Complaint.findById(complaintId).populate(
+            "assignedTo"
+        );
 
         if (!complaint) {
-            return res.status(404).json({ message: 'Complaint not found' });
+            return res.status(404).json({ message: "Complaint not found" });
         }
 
         res.status(200).json(complaint);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching complaint', error });
+        res.status(500).json({ message: "Error fetching complaint", error });
     }
 };
 
-
 const getAllComplaints = async (req, res) => {
     try {
-        const complaints = await Complaint.find().populate('assignedTo');
+        const complaints = await Complaint.find().populate("assignedTo");
 
         res.status(200).json(complaints);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching complaints', error });
+        res.status(500).json({ message: "Error fetching complaints", error });
     }
 };
 
 module.exports = {
     addComplaint,
     editComplaint,
-    deleteComplaint
+    deleteComplaint,
+    getAllComplaints
 };
