@@ -11,9 +11,9 @@ const ComplaintSchema = new Schema({
     type: mongoose.Schema.ObjectId,
     ref: "User",
   },
-  status: { type: String, required: true },
-  remarks: { type: String, required: true },
-  dateAndTimeOfResolution: { type: Date, required: true },
+  status: { type: String},
+  remarks: { type: String},
+  dateAndTimeOfResolution: { type: Date },
 });
 
 module.exports = mongoose.model("Complaint", ComplaintSchema);
