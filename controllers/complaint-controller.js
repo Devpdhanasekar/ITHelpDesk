@@ -92,6 +92,35 @@ const editComplaint = async (req, res) => {
         res.status(500).json({ message: "Error editing complaint", error });
     }
 };
+const updateComplaintStatusAndRemarks = async (req, res) => {
+    const { complaintId, newStatus, newRemarks } = req.body;
+
+    if (!complaintId || !newStatus || !newRemarks) {
+        return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    try {
+        const updatedComplaint = await Complaint.findByIdAndUpdate(
+            complaintId,
+            {
+                status: newStatus,
+                remarks: newRemarks,
+                dateAndTimeOfResolution: Date.now(), // Update the resolution time as well
+            },
+            { new: true } // This option returns the updated document
+        );
+
+        if (!updatedComplaint) {
+            return res.status(404).json({ success: false, message: 'Complaint not found' });
+        }
+
+        return res.status(200).json({ success: true, message: 'Complaint updated successfully', updatedComplaint });
+    } catch (error) {
+        console.error('Error updating complaint:', error);
+        return res.status(500).json({ success: false, message: 'Error updating complaint', error });
+    }
+};
+
 
 // Function to delete a complaint
 const deleteComplaint = async (req, res) => {
@@ -173,5 +202,6 @@ module.exports = {
     addComplaint,
     editComplaint,
     deleteComplaint,
-    getAllComplaints
+    getAllComplaints,
+    updateComplaintStatusAndRemarks
 };
