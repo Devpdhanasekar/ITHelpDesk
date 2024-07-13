@@ -136,13 +136,33 @@ const getComplaintById = async (req, res) => {
 
 const getAllComplaints = async (req, res) => {
     try {
-        const complaints = await Complaint.find().populate("assignedTo");
+        // Find complaints and populate both complaintBy and assignedTo fields with userName
+        const complaints = await Complaint.find()
+            .populate("complaintBy", "userName")
+            .populate("assignedTo", "userName");
 
-        res.status(200).json(complaints);
+        // Map the complaints to replace complaintBy and assignedTo with userName
+        const formattedComplaints = complaints.map(complaint => ({
+            _id: complaint._id,
+            complaintFrom: complaint.complaintFrom,
+            complaintBy: complaint.complaintBy.userName, // Use userName instead of id
+            natureOfComplaint: complaint.natureOfComplaint,
+            descriptionOfComplaint: complaint.descriptionOfComplaint,
+            dateAndTimeOfComplaint: complaint.dateAndTimeOfComplaint,
+            location: complaint.location,
+            assignedTo: complaint.assignedTo.userName, // Use userName instead of id
+            dateAndTimeOfResolution: complaint.dateAndTimeOfResolution,
+        }));
+
+        res.status(200).json(formattedComplaints);
     } catch (error) {
         res.status(500).json({ message: "Error fetching complaints", error });
     }
 };
+
+module.exports = getAllComplaints;
+
+
 
 module.exports = {
     addComplaint,
