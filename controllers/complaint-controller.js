@@ -44,6 +44,7 @@ const addComplaint = async (req, res) => {
                             dateAndTimeOfComplaint,
                             location: user.location,
                             assignedTo: assignedTo._id,
+                            status: "pending",
                         });
 
                         await newComplaint.save();
@@ -138,8 +139,9 @@ const getAllComplaints = async (req, res) => {
     try {
         // Find complaints and populate both complaintBy and assignedTo fields with userName
         const complaints = await Complaint.find()
-            .populate("complaintBy", "userName")
+            .populate("complaintBy", "userName mobileNumber")
             .populate("assignedTo", "userName");
+        console.log(complaints);
 
         // Map the complaints to replace complaintBy and assignedTo with userName
         const formattedComplaints = complaints.map(complaint => ({
@@ -152,6 +154,9 @@ const getAllComplaints = async (req, res) => {
             location: complaint.location,
             assignedTo: complaint.assignedTo.userName, // Use userName instead of id
             dateAndTimeOfResolution: complaint.dateAndTimeOfResolution,
+            status: complaint.status,
+            remarks: complaint.remarks,
+            mobileNumber: complaint.complaintBy.mobileNumber
         }));
 
         res.status(200).json(formattedComplaints);
