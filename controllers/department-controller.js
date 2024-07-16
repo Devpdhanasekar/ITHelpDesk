@@ -18,7 +18,8 @@ exports.createDepartment = async (req, res) => {
 exports.getDepartments = async (req, res) => {
     try {
         const departments = await Department.find();
-        res.status(200).json(departments);
+        const departmentsArray = departments.map(department => department.Department);
+        res.status(200).json(departmentsArray);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
