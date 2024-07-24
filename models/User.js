@@ -38,7 +38,11 @@ const userSchema = new Schema({
     receivedTickets: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Complaint'
-    }]
+    }],
+    isActive: {
+        type: Boolean,
+        default: true
+    }
 }, { timestamps: true })
 
 module.exports = mongoose.model("User", userSchema);
